@@ -273,14 +273,12 @@ function Encryption.new(data: string)
 end;
 
 function Encryption.reverse(data: string)
-	-- ✅ ZABEZPIECZENIE: pusty / nieprawidłowy data
 	if type(data) ~= "string" or #data == 0 then
 		return "";
 	end;
 
 	local main_data = string.split(data,'?');
 
-	-- ✅ ZABEZPIECZENIE: brak main_data[1]
 	if not main_data[1] then
 		return "";
 	end;
@@ -288,7 +286,6 @@ function Encryption.reverse(data: string)
 	local seed_str = main_data[1]:gsub('{',''):gsub('}','');
 	local seed = tonumber(seed_str);
 
-	-- ✅ ZABEZPIECZENIE: seed == nil (uszkodzony config)
 	if not seed then
 		return "";
 	end;
@@ -299,7 +296,6 @@ function Encryption.reverse(data: string)
 	for i,v in next , main_data do
 		if i > 1 then
 			local fake_byte = tonumber(v);
-			-- ✅ ZABEZPIECZENIE: fake_byte == nil
 			if fake_byte then
 				table.insert(ks , string.char(fake_byte - real_seed))
 			end;
@@ -1617,8 +1613,16 @@ function NeverLose:CreateColorPicker(HandleFrame: Frame)
 	end;
 
 	function ColorPickerLib:SetValue(Color)
+		if Color == nil then
+			return;
+		end;
+
 		if typeof(Color) == 'string' then
 			Color = Color3.fromHex(Color);
+		end;
+
+		if typeof(Color) ~= "Color3" then
+			return;
 		end;
 
 		local H , S , V = Color:ToHSV();
@@ -1723,12 +1727,20 @@ for i,v in next , NeverLose.KeyEnum do
 end;
 
 function NeverLose:KeyCodeToStr(K: Enum.KeyCode)
+	if K == nil then
+		return "None";
+	end;
+
 	if typeof(K) == 'string' then
 		if NeverLose.KeyEnum[K] then
 			return NeverLose.KeyEnum[K];
 		end;
 
 		return K;
+	end;
+
+	if not K.Name then
+		return tostring(K);
 	end;
 
 	return (NeverLose.KeyEnum[K.Name] or K.Name);
@@ -1850,6 +1862,10 @@ function NeverLose:RegisiterHandler(Handler: Frame , Signal)
 		end;
 
 		function ToggleLib:SetValue(v)
+			if v == nil then
+				return;
+			end;
+
 			Config.Default = v;
 
 			if Signal:GetValue() then
@@ -2172,6 +2188,15 @@ function NeverLose:RegisiterHandler(Handler: Frame , Signal)
 		end;
 
 		function SliderLib:SetValue(v)
+			if v == nil then
+				return;
+			end;
+
+			v = tonumber(v);
+			if v == nil then
+				return;
+			end;
+
 			Config.Default = v;
 
 			if Signal:GetValue() then
@@ -2407,6 +2432,10 @@ function NeverLose:RegisiterHandler(Handler: Frame , Signal)
 		end;
 
 		function ColorPickerLib:SetValue(v)
+			if v == nil then
+				return;
+			end;
+
 			Config.Default = v;
 			BackendM:SetValue(Config.Default)
 		end;
@@ -2558,6 +2587,10 @@ function NeverLose:RegisiterHandler(Handler: Frame , Signal)
 		end;
 
 		function KeybindLib:SetValue(v)
+			if v == nil then
+				return;
+			end;
+
 			Config.Default = v;
 			ValueLabel.Text = NeverLose:KeyCodeToStr(v);
 			KeybindLib:Update();
@@ -2672,6 +2705,10 @@ function NeverLose:RegisiterHandler(Handler: Frame , Signal)
 		end;
 
 		function TextBoxLib:SetValue(v)
+			if v == nil then
+				return;
+			end;
+
 			Config.Default = v;
 			TextBox.Text = tostring(v);
 			Config.Callback(Config.Default);
@@ -2696,6 +2733,9 @@ function NeverLose:RegisiterHandler(Handler: Frame , Signal)
 		})
 
 		Config.Default = NeverLose.ProcessDropdown(Config.Default);
+		if Config.Default == nil then
+			Config.Default = Config.Values[1] or "Select";
+		end;
 
 		local Dropdown = Instance.new("Frame")
 		local DropdownIcon = Instance.new("TextLabel")
@@ -3153,6 +3193,10 @@ function NeverLose:RegisiterHandler(Handler: Frame , Signal)
 		end;
 
 		function DropdownLib:SetValue(v)
+			if v == nil then
+				return;
+			end;
+
 			Config.Default = v;
 
 			BasedLabel.Text = NeverLose.ParseDropdown(Config.Default);
@@ -3200,8 +3244,8 @@ NeverLose.ProcessDropdown = LPH_NO_VIRTUALIZE(function(value)
 	end;
 end);
 
-NeverLose.ParseDropdown = LPH_NO_VIRTUALIZE(function(value)
-	if not value then return 'Select'; end;
+	NeverLose.ParseDropdown = LPH_NO_VIRTUALIZE(function(value)
+	if value == nil then return 'Select'; end;
 
 	local Out;
 
@@ -5420,18 +5464,20 @@ function NeverLose:CreateWindow(Config)
 			local cd = 0;
 			for Flag,v in next , NeverLose.Flags do
 				if v and v.GetValue then
-					local data = v:GetValue();
-
-					if typeof(data) == 'Color3' then
-						table.insert(ikc,{
-							Idx = Flag,
-							Value = data:ToHex(),
-						});
-					else
-						table.insert(ikc,{
-							Idx = Flag,
-							Value = data
-						});
+					local ok, data = pcall(function() return v:GetValue() end);
+					
+					if ok and data ~= nil then
+						if typeof(data) == 'Color3' then
+							table.insert(ikc,{
+								Idx = Flag,
+								Value = data:ToHex(),
+							});
+						else
+							table.insert(ikc,{
+								Idx = Flag,
+								Value = data
+							});
+						end;
 					end;
 				end;
 				
@@ -5448,12 +5494,10 @@ function NeverLose:CreateWindow(Config)
 		end;
 
 		function ConfigLib:LoadData(data)
-			-- ✅ ZABEZPIECZENIE: pusty data
 			if type(data) ~= "string" or #data == 0 then
 				return;
 			end;
 
-			-- ✅ Base64 decode z pcall
 			local decoded_b64 = nil;
 			local ok1 = pcall(function()
 				decoded_b64 = NeverLose.Base64Decode(data);
@@ -5463,7 +5507,6 @@ function NeverLose:CreateWindow(Config)
 				return;
 			end;
 
-			-- ✅ Encryption.reverse z pcall
 			local decrypted = nil;
 			local ok2 = pcall(function()
 				decrypted = Encryption.reverse(decoded_b64);
@@ -5473,7 +5516,6 @@ function NeverLose:CreateWindow(Config)
 				return;
 			end;
 
-			-- ✅ JSONDecode z pcall
 			local coded = nil;
 			local ok3 = pcall(function()
 				coded = HttpService:JSONDecode(decrypted);
@@ -5484,10 +5526,12 @@ function NeverLose:CreateWindow(Config)
 			end;
 
 			for i,v in next , coded do
-				if v.Idx then
+				if v.Idx and v.Value ~= nil then
 					if NeverLose.Flags[v.Idx] then
 						task.spawn(function()
-							NeverLose.Flags[v.Idx]:SetValue(v.Value)
+							pcall(function()
+								NeverLose.Flags[v.Idx]:SetValue(v.Value)
+							end)
 						end)
 					end;
 				end;
@@ -5495,13 +5539,15 @@ function NeverLose:CreateWindow(Config)
 		end;
 
 		function ConfigLib:RefreshConfig()
-			if not isfolder(Window.ConfigFolder) then
-				makefolder(Window.ConfigFolder);
-			end;
-			
-			if not isfile(Window.ConfigFolder..'/Default') then
-				writefile(Window.ConfigFolder..'/Default',ConfigLib:GetData());
-			end;
+			pcall(function()
+				if not isfolder(Window.ConfigFolder) then
+					makefolder(Window.ConfigFolder);
+				end;
+				
+				if not isfile(Window.ConfigFolder..'/Default') then
+					writefile(Window.ConfigFolder..'/Default',ConfigLib:GetData());
+				end;
+			end);
 			
 			for i,v in next,ConfigMenu:GetChildren() do
 				if v:GetAttribute('ConfigItem') then
@@ -5774,36 +5820,39 @@ function NeverLose:CreateWindow(Config)
 			end;
 
 			table.clear(ConfigList);
+			end);
 		end;
 		
 		task.delay(1,function()
-			if ConfigLib.SelectedConfig == "Default" then
-				local path = Window.ConfigFolder..'/Default';
-				local ConfigNameStr = "Default";
-				
-				if isfile(path) then
-					local data = readfile(path);
-
-					ConfigLib:LoadData(data);
-
-					ConfigLib.SelectedConfig = ConfigNameStr;
-					ConfigName.Text = ConfigNameStr;
-
-					UpdateSize();
-
-					ConfigLib:RefreshConfig();
-
-					Logging.new("folder","Loaded Default Config",3.5);
+			pcall(function()
+				if ConfigLib.SelectedConfig == "Default" then
+					local path = Window.ConfigFolder..'/Default';
+					local ConfigNameStr = "Default";
 					
-					task.spawn(function()
-						while true do task.wait(5.75);
-							if isfile(path) and ConfigLib.SelectedConfig == "Default" then
-								writefile(Window.ConfigFolder..'/Default',ConfigLib:GetData(true));
+					if isfile(path) then
+						local data = readfile(path);
+
+						ConfigLib:LoadData(data);
+
+						ConfigLib.SelectedConfig = ConfigNameStr;
+						ConfigName.Text = ConfigNameStr;
+
+						UpdateSize();
+
+						ConfigLib:RefreshConfig();
+
+						Logging.new("folder","Loaded Default Config",3.5);
+						
+						task.spawn(function()
+							while true do task.wait(5.75);
+								if isfile(path) and ConfigLib.SelectedConfig == "Default" then
+									writefile(Window.ConfigFolder..'/Default',ConfigLib:GetData(true));
+								end;
 							end;
-						end;
-					end);
+						end);
+					end;
 				end;
-			end;
+			end);  -- ← DODAJ TO - zamyka pcall
 		end);
 
 		local hover_write = NeverLose:CreateInput(ConfigIcon,function()
@@ -5922,6 +5971,10 @@ function NeverLose:CreateWindow(Config)
 			Username = LocalPlayer.DisplayName,
 			Expires = "Never",
 		});
+
+		if Config.Username == nil then Config.Username = LocalPlayer.DisplayName end;
+		if Config.Profile == nil then Config.Profile = NeverLose.UserProfile end;
+		if Config.Expires == nil then Config.Expires = "Never" end;
 
 		AccountName.Text = Config.Username;
 		AccountProfile.Image = Config.Profile;
