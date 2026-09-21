@@ -6492,9 +6492,80 @@ function NeverLose:CreateIndicator()
 	local Indicators = {};
 
 	Indicators.Color = {
-		Red = Color3.fromRGB(255, 102, 105),
-		Green = Color3.fromRGB(135, 255, 143),
-		White = Color3.fromRGB(186, 186, 186),
+		-- Podstawowe
+		Red       = Color3.fromRGB(255, 102, 105),
+		Green     = Color3.fromRGB(135, 255, 143),
+		White     = Color3.fromRGB(186, 186, 186),
+		Black     = Color3.fromRGB(40, 40, 40),
+		Gray      = Color3.fromRGB(120, 120, 120),
+		DarkGray  = Color3.fromRGB(70, 70, 70),
+		LightGray = Color3.fromRGB(200, 200, 200),
+
+		-- Ciepłe
+		Orange    = Color3.fromRGB(255, 165, 0),
+		Yellow    = Color3.fromRGB(255, 220, 100),
+		Gold      = Color3.fromRGB(255, 215, 0),
+		Amber     = Color3.fromRGB(255, 191, 0),
+		Coral     = Color3.fromRGB(255, 127, 80),
+		Salmon    = Color3.fromRGB(250, 128, 114),
+		Peach     = Color3.fromRGB(255, 180, 130),
+
+		-- Zimne
+		Blue      = Color3.fromRGB(78, 127, 252),
+		SkyBlue   = Color3.fromRGB(135, 206, 235),
+		Navy      = Color3.fromRGB(30, 60, 150),
+		Cyan      = Color3.fromRGB(0, 255, 255),
+		Teal      = Color3.fromRGB(0, 128, 128),
+		Turquoise = Color3.fromRGB(64, 224, 208),
+		Aqua      = Color3.fromRGB(0, 200, 255),
+
+		-- Zielone
+		Lime      = Color3.fromRGB(50, 255, 50),
+		Mint      = Color3.fromRGB(0, 255, 150),
+		Emerald   = Color3.fromRGB(80, 200, 120),
+		Forest    = Color3.fromRGB(34, 139, 34),
+		Olive     = Color3.fromRGB(128, 128, 0),
+		Spring    = Color3.fromRGB(0, 255, 127),
+
+		-- Fioletowe / Różowe
+		Purple    = Color3.fromRGB(170, 90, 255),
+		Violet    = Color3.fromRGB(138, 43, 226),
+		Magenta   = Color3.fromRGB(255, 0, 255),
+		Pink      = Color3.fromRGB(255, 105, 180),
+		HotPink   = Color3.fromRGB(255, 20, 147),
+		Lavender  = Color3.fromRGB(180, 150, 255),
+		Fuchsia   = Color3.fromRGB(255, 0, 200),
+		Indigo    = Color3.fromRGB(75, 0, 130),
+
+		-- Czerwone / Brązowe
+		Crimson   = Color3.fromRGB(220, 20, 60),
+		Maroon    = Color3.fromRGB(128, 0, 0),
+		Brown     = Color3.fromRGB(139, 69, 19),
+		Chocolate = Color3.fromRGB(210, 105, 30),
+		Tan       = Color3.fromRGB(210, 180, 140),
+
+		-- Neonowe
+		NeonRed     = Color3.fromRGB(255, 30, 30),
+		NeonGreen   = Color3.fromRGB(0, 255, 0),
+		NeonBlue    = Color3.fromRGB(30, 100, 255),
+		NeonPurple  = Color3.fromRGB(200, 50, 255),
+		NeonPink    = Color3.fromRGB(255, 50, 200),
+		NeonYellow  = Color3.fromRGB(255, 255, 0),
+		NeonOrange  = Color3.fromRGB(255, 130, 0),
+		NeonCyan    = Color3.fromRGB(0, 255, 255),
+
+		-- Specjalne (Muminek / branding)
+		Muminek   = Color3.fromRGB(255, 130, 200),
+		Owner     = Color3.fromRGB(255, 60, 60),
+		Premium   = Color3.fromRGB(255, 215, 0),
+		Moderator = Color3.fromRGB(0, 220, 220),
+		Admin     = Color3.fromRGB(220, 50, 220),
+		VIP       = Color3.fromRGB(180, 220, 255),
+
+		-- Dodatkowe
+		Rainbow   = Color3.fromRGB(255, 100, 200),  -- placeholder, można animować
+		Discord   = Color3.fromRGB(114, 137, 218),
+		Roblox    = Color3.fromRGB(226, 35, 26),
 	};
 
 	Indicators.Root = IndicatorFrame;
