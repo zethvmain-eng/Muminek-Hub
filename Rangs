@@ -97,7 +97,7 @@
     do
     local colorTable = Indicator.Color  
     
-    --[[if colorTable then
+    if colorTable then
         colorTable.Red = Color3.fromRGB(255, 0, 0)
         colorTable.Green = Color3.fromRGB(0, 255, 0)
         colorTable.Blue = Color3.fromRGB(0, 0, 255)
@@ -113,4 +113,4 @@
         colorTable.Silver = Color3.fromRGB(192, 192, 192)
         colorTable.Teal = Color3.fromRGB(0, 128, 128)
         end
-    end --]]
+    end
