@@ -1,0 +1,111 @@
+-- ============================================================
+--  SYSTEM RANG — MuminekRanks
+--  Tworzy folder, skanuje podfoldery (Owner/Moderator/Premium)
+--  i ustawia zmienne _G.*Rank
+-- ============================================================
+
+do
+    -- == Konfiguracja ==
+    local FOLDER_NAME = "MuminekRanks"
+
+    -- Lista dozwolonych rang (podfoldery)
+    local ALLOWED_RANKS = {
+        ["Owner"]     = true,
+        ["Moderator"] = true,
+        ["Premium"]   = true,
+    }
+
+    -- == 1. Utwórz folder główny jeśli nie istnieje ==
+    if not isfolder(FOLDER_NAME) then
+        local ok, err = pcall(makefolder, FOLDER_NAME)
+        if ok then
+            print("[System Rang] Utworzono folder: " .. FOLDER_NAME)
+        else
+            warn("[System Rang] Nie udało się utworzyć folderu: " .. tostring(err))
+        end
+    end
+
+    -- == 2. Domyślne wartości (User) ==
+    _G.PlayerRank    = "User"
+    _G.IsRanked      = false
+
+    _G.UserRank      = true
+    _G.OwnerRank     = false
+    _G.ModeratorRank = false
+    _G.PremiumRank   = false
+
+    -- == 3. Skanuj folder w poszukiwaniu podfolderów rang ==
+    local foundRank = nil
+
+    -- Sprawdź czy funkcja listfiles istnieje
+    if not listfiles then
+        warn("[System Rang] Brak funkcji listfiles — pomijam skanowanie")
+    else
+        local ok, items = pcall(listfiles, FOLDER_NAME)
+        if ok and items then
+            for _, path in ipairs(items) do
+                -- Wyciągnij nazwę z pełnej ścieżki
+                local name = path:match("([^/\\]+)$")
+                if name and ALLOWED_RANKS[name] then
+                    -- Sprawdź czy to folder (isfolder)
+                    if isfolder and isfolder(path) then
+                        foundRank = name
+                        break
+                    else
+                        -- fallback: jeśli nie ma isfolder, akceptuj samą nazwę
+                        foundRank = name
+                        break
+                    end
+                end
+            end
+        end
+    end
+
+    -- == 4. Ustaw zmienne na podstawie znalezionej rangi ==
+    if foundRank then
+        _G.PlayerRank = foundRank
+        _G.IsRanked   = true
+
+        _G.UserRank      = false
+        _G.OwnerRank     = (foundRank == "Owner")
+        _G.ModeratorRank = (foundRank == "Moderator")
+        _G.PremiumRank   = (foundRank == "Premium")
+
+        print("[System Rang] Wykryto rangę: " .. foundRank)
+    else
+        print("[System Rang] Brak rangi — tryb User")
+    end
+
+    -- == 5. Powiadomienie + log (jeśli systemy dostępne) ==
+    if foundRank then
+        if Notification and Notification.new then
+            pcall(function()
+                Notification.new({
+                    Title   = "Ranga: " .. foundRank,
+                    Content = "Masz dostęp do funkcji rangi " .. foundRank .. ".",
+                    Duration = 5,
+                })
+            end)
+        end
+
+        if Logging and Logging.new then
+            pcall(function()
+                Logging.new("shield-lock", "Zweryfikowano rangę: " .. foundRank, 5)
+            end)
+        end
+    else
+        if Logging and Logging.new then
+            pcall(function()
+                Logging.new("person", "Brak rangi – tryb podstawowy", 3)
+            end)
+        end
+    end
+
+    -- == 6. Wystaw globalnie ==
+    getgenv().PlayerRank    = _G.PlayerRank
+    getgenv().IsRanked      = _G.IsRanked
+    getgenv().UserRank      = _G.UserRank
+    getgenv().OwnerRank     = _G.OwnerRank
+    getgenv().ModeratorRank = _G.ModeratorRank
+    getgenv().PremiumRank   = _G.PremiumRank
+end
