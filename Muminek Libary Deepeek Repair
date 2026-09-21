@@ -6749,6 +6749,304 @@ function NeverLose:CreateIndicator()
 	return Indicators;
 end;
 
+-- --------------------------------------------------------
+--  HOTKEYS HUD MODULE NeverLose:CreateHotkeys()
+-- --------------------------------------------------------
+function NeverLose:CreateHotkeys()
+    local CONFIG = {
+        BackgroundColor        = Color3.fromRGB(8, 8, 13),
+        BackgroundTransparency = 0.2,
+        CornerRadius           = 10,
+        BorderColor            = Color3.fromRGB(45, 48, 58),
+        BorderTransparency     = 0.65,
+        BorderThickness        = 1.5,
+        PaddingX               = 12,
+        PaddingY               = 8,
+        RowSpacing             = 4,
+        RowHeight              = 22,
+        IconSize               = 16,
+        TextSize               = 13,
+        KeySize                = 12,
+        IconColor              = Color3.fromRGB(78, 127, 252),
+        TextColor              = Color3.fromRGB(255, 255, 255),
+        KeyColor               = Color3.fromRGB(180, 180, 180),
+        Width                  = 200,
+        Position               = UDim2.new(0, 25, 0, 260),
+        UseBlur                = true,
+        UseShadow              = true,
+    }
+
+    local HUD = {
+        ActiveHotkeys = {},
+        LayoutOrder   = 0,
+        BlurSignal    = nil,
+        Shadow        = nil,
+        Config        = CONFIG,
+    }
+
+    -- === RAMKA ===
+    local HotkeysFrame = Instance.new("Frame")
+    HotkeysFrame.Name = NeverLose.RandomString()
+    HotkeysFrame.Parent = NeverLose.ScreenGui
+    HotkeysFrame.BackgroundColor3 = CONFIG.BackgroundColor
+    HotkeysFrame.BackgroundTransparency = CONFIG.BackgroundTransparency
+    HotkeysFrame.BorderSizePixel = 0
+    HotkeysFrame.Position = CONFIG.Position
+    HotkeysFrame.Size = UDim2.new(0, CONFIG.Width, 0, 30)
+    HotkeysFrame.ZIndex = 100
+    HotkeysFrame.ClipsDescendants = true
+    HotkeysFrame.Visible = true
+
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, CONFIG.CornerRadius)
+    UICorner.Parent = HotkeysFrame
+
+    local UIStroke = Instance.new("UIStroke")
+    UIStroke.Color = CONFIG.BorderColor
+    UIStroke.Transparency = CONFIG.BorderTransparency
+    UIStroke.Thickness = CONFIG.BorderThickness
+    UIStroke.Parent = HotkeysFrame
+
+    local UIListLayout = Instance.new("UIListLayout")
+    UIListLayout.Parent = HotkeysFrame
+    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    UIListLayout.Padding = UDim.new(0, CONFIG.RowSpacing)
+    UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+    local UIPadding = Instance.new("UIPadding")
+    UIPadding.Parent = HotkeysFrame
+    UIPadding.PaddingTop = UDim.new(0, CONFIG.PaddingY)
+    UIPadding.PaddingBottom = UDim.new(0, CONFIG.PaddingY)
+    UIPadding.PaddingLeft = UDim.new(0, CONFIG.PaddingX)
+    UIPadding.PaddingRight = UDim.new(0, CONFIG.PaddingX)
+
+    HUD.Frame = HotkeysFrame
+    HUD.Stroke = UIStroke
+    HUD.ListLayout = UIListLayout
+
+    -- === SHADOW ===
+    if CONFIG.UseShadow then
+        pcall(function()
+            HUD.Shadow = NeverLose:CreateShadow(HotkeysFrame)
+            HUD.Shadow:Render(true)
+        end)
+    end
+
+    -- === BLUR ===
+    if CONFIG.UseBlur then
+        pcall(function()
+            HUD.BlurSignal = NeverLose:CreateSignal(true)
+            NeverLose:CreateBlurModule(HotkeysFrame, HUD.BlurSignal)
+        end)
+    end
+
+    -- === PRZELICZANIE ROZMIARU ===
+    local function updateFrameSize()
+        local rows = 0
+        for _, child in pairs(HotkeysFrame:GetChildren()) do
+            if child:IsA("Frame") and child:FindFirstChildWhichIsA("TextLabel") then
+                rows = rows + 1
+            end
+        end
+        local totalHeight = (rows * CONFIG.RowHeight)
+            + (math.max(0, rows - 1) * CONFIG.RowSpacing)
+            + (CONFIG.PaddingY * 2)
+        if totalHeight < 20 then totalHeight = 20 end
+        HotkeysFrame.Size = UDim2.new(0, CONFIG.Width, 0, totalHeight)
+    end
+    HUD.UpdateSize = updateFrameSize
+
+    -- === TWORZENIE WIERSZA ===
+    local function createHotkeyRow(name, icon, key, layoutOrder, bold)
+        local Row = Instance.new("Frame")
+        Row.Name = NeverLose.RandomString()
+        Row.Parent = HotkeysFrame
+        Row.BackgroundTransparency = 1
+        Row.Size = UDim2.new(1, 0, 0, CONFIG.RowHeight)
+        Row.LayoutOrder = layoutOrder
+        Row.ZIndex = 101
+
+        local IconLabel = Instance.new("TextLabel")
+        IconLabel.Name = NeverLose.RandomString()
+        IconLabel.Parent = Row
+        IconLabel.BackgroundTransparency = 1
+        IconLabel.Size = UDim2.new(0, CONFIG.IconSize + 6, 1, 0)
+        IconLabel.Position = UDim2.new(0, 0, 0, 0)
+        IconLabel.FontFace = NeverLose.BuiltInBold
+        IconLabel.Text = icon or "circle"
+        IconLabel.TextColor3 = CONFIG.IconColor
+        IconLabel.TextSize = CONFIG.IconSize
+        IconLabel.TextXAlignment = Enum.TextXAlignment.Left
+        IconLabel.ZIndex = 102
+
+        local NameLabel = Instance.new("TextLabel")
+        NameLabel.Name = NeverLose.RandomString()
+        NameLabel.Parent = Row
+        NameLabel.BackgroundTransparency = 1
+        NameLabel.Size = UDim2.new(1, -(CONFIG.IconSize + 10) - 70, 1, 0)
+        NameLabel.Position = UDim2.new(0, CONFIG.IconSize + 6, 0, 0)
+        NameLabel.Font = bold and Enum.Font.GothamBold or Enum.Font.GothamMedium
+        NameLabel.Text = name or "Hotkey"
+        NameLabel.TextColor3 = CONFIG.TextColor
+        NameLabel.TextSize = CONFIG.TextSize
+        NameLabel.TextXAlignment = Enum.TextXAlignment.Left
+        NameLabel.ZIndex = 102
+
+        local KeyLabel = Instance.new("TextLabel")
+        KeyLabel.Name = NeverLose.RandomString()
+        KeyLabel.Parent = Row
+        KeyLabel.BackgroundTransparency = 1
+        KeyLabel.Size = UDim2.new(0, 70, 1, 0)
+        KeyLabel.Position = UDim2.new(1, -70, 0, 0)
+        KeyLabel.Font = Enum.Font.GothamBold
+        KeyLabel.Text = "[" .. tostring(key) .. "]"
+        KeyLabel.TextColor3 = CONFIG.KeyColor
+        KeyLabel.TextSize = CONFIG.KeySize
+        KeyLabel.TextXAlignment = Enum.TextXAlignment.Right
+        KeyLabel.ZIndex = 102
+
+        return Row, IconLabel, NameLabel, KeyLabel
+    end
+
+    -- === API ===
+    function HUD:AddHotkey(config)
+        config = config or {}
+        if not config.Name then return nil end
+
+        if HUD.ActiveHotkeys[config.Name] then
+            HUD:RemoveHotkey(config.Name)
+        end
+
+        HUD.LayoutOrder = HUD.LayoutOrder + 1
+
+        local row, iconL, nameL, keyL = createHotkeyRow(
+            config.Name,
+            config.Icon or "circle",
+            config.Key or "None",
+            HUD.LayoutOrder,
+            config.Bold == true
+        )
+
+        HUD.ActiveHotkeys[config.Name] = {
+            row  = row,
+            icon = iconL,
+            name = nameL,
+            key  = keyL,
+            bold = config.Bold == true,
+        }
+
+        updateFrameSize()
+        return HUD.ActiveHotkeys[config.Name]
+    end
+
+    function HUD:RemoveHotkey(name)
+        if HUD.ActiveHotkeys[name] then
+            HUD.ActiveHotkeys[name].row:Destroy()
+            HUD.ActiveHotkeys[name] = nil
+            updateFrameSize()
+        end
+    end
+
+    function HUD:UpdateKey(name, newKey)
+        if HUD.ActiveHotkeys[name] then
+            HUD.ActiveHotkeys[name].key.Text = "[" .. tostring(newKey) .. "]"
+        end
+    end
+
+    function HUD:UpdateName(name, newName)
+        if HUD.ActiveHotkeys[name] then
+            HUD.ActiveHotkeys[name].name.Text = newName
+        end
+    end
+
+    function HUD:UpdateIcon(name, newIcon)
+        if HUD.ActiveHotkeys[name] then
+            HUD.ActiveHotkeys[name].icon.Text = newIcon
+        end
+    end
+
+    function HUD:ClearAll()
+        for name, _ in pairs(HUD.ActiveHotkeys) do
+            HUD:RemoveHotkey(name)
+        end
+        HUD.LayoutOrder = 0
+        updateFrameSize()
+    end
+
+    function HUD:SetBackgroundColor(color)
+        CONFIG.BackgroundColor = color
+        HotkeysFrame.BackgroundColor3 = color
+    end
+
+    function HUD:SetBackgroundTransparency(t)
+        CONFIG.BackgroundTransparency = t
+        HotkeysFrame.BackgroundTransparency = t
+    end
+
+    function HUD:SetBorderColor(color)
+        CONFIG.BorderColor = color
+        UIStroke.Color = color
+    end
+
+    function HUD:SetBorderTransparency(t)
+        CONFIG.BorderTransparency = t
+        UIStroke.Transparency = t
+    end
+
+    function HUD:SetIconColor(color)
+        CONFIG.IconColor = color
+        for _, data in pairs(HUD.ActiveHotkeys) do
+            data.icon.TextColor3 = color
+        end
+    end
+
+    function HUD:SetTextColor(color)
+        CONFIG.TextColor = color
+        for _, data in pairs(HUD.ActiveHotkeys) do
+            data.name.TextColor3 = color
+        end
+    end
+
+    function HUD:SetKeyColor(color)
+        CONFIG.KeyColor = color
+        for _, data in pairs(HUD.ActiveHotkeys) do
+            data.key.TextColor3 = color
+        end
+    end
+
+    function HUD:SetPosition(position)
+        CONFIG.Position = position
+        HotkeysFrame.Position = position
+    end
+
+    function HUD:SetVisible(visible)
+        HotkeysFrame.Visible = visible
+        if HUD.BlurSignal then
+            pcall(function() HUD.BlurSignal:SetValue(visible) end)
+        end
+        if HUD.Shadow then
+            pcall(function() HUD.Shadow:Render(visible) end)
+        end
+    end
+
+    function HUD:SetWidth(width)
+        CONFIG.Width = width
+        updateFrameSize()
+    end
+
+    function HUD:Destroy()
+        if HUD.Shadow then pcall(function() HUD.Shadow:Render(false) end) end
+        if HUD.BlurSignal then pcall(function() HUD.BlurSignal:SetValue(false) end) end
+        HotkeysFrame:Destroy()
+        HUD.ActiveHotkeys = {}
+        HUD.LayoutOrder = 0
+    end
+
+    -- Cache
+    NeverLose.__HotkeysCache = HUD
+
+    return HUD
+end
 function NeverLose:Unload()
 	if not NeverLose.UnloadEnabled then
 		return;	
@@ -6759,6 +7057,7 @@ function NeverLose:Unload()
 	for i,v in next , NeverLose.GlobalSignals do
 		pcall(v.Disconnect,v)
 	end;
+
 end;
 
 return NeverLose;
