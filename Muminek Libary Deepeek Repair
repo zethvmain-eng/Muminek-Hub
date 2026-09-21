@@ -6493,7 +6493,7 @@ function NeverLose:CreateIndicator()
 
 	Indicators.Color = {
 		-- Podstawowe
-		Red       = Color3.fromRGB(255, 102, 105),
+		Red       = Color3.fromRGB(255, 17, 0),
 		Green     = Color3.fromRGB(135, 255, 143),
 		White     = Color3.fromRGB(186, 186, 186),
 		Black     = Color3.fromRGB(40, 40, 40),
